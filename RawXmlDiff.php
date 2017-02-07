@@ -45,20 +45,78 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
  
-require_once('newAKNDiff09.php');
-require_once('RawXmlDiff.php');
+require_once('lib/class.TextDiff.php');
+require_once('lib/class.CodeDiff.php');
+require_once('../utils.php');
+require_once('../config.php');
 
-$format = (isset($_GET['format'])) ? $_GET['format'] : 'text';
-$doc_1 = (isset($_GET['from'])) ? $_GET['from'] : FALSE;
-$doc_2 = (isset($_GET['to'])) ? $_GET['to'] : FALSE;
-$edit = (isset($_GET['edit'])) ? TRUE : FALSE;
+class RawXmlDiff {
+	
+	const DIFFSTYLE = "https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js";
+	const CSS = "data/diffText.css";
+	private $from,$to,$css,$format,$doc;
+	
+	public function __construct($from, $to) {
+		$this->from = $from;
+		$this->to = $to;
+		// create container document
+		$this->doc = new DOMDocument();
+		
+		if($this->from && $this->to) {
+			$result = $this->compare();
+		} else {
+			$result = '<p class="diffProblems"><em>From Document</em> does not match to <em>To Document</em>
+			           for this expression: <strong>' . $this->expression . '</strong></p>';
+		}
+		
+		$this->prepareDocument($result);
+	}
+	
+	public function render() {
+		echo $this->renderXML();
+	}
 
-if ($format === 'text') {
-    $diff = new newAKNDiff09($doc_1, $doc_2, $edit);
-} else {
-    $diff = new RawXmlDiff($doc_1, $doc_2);
+	private function compareXML() {
+		$result = CodeDiff::compareFiles($this->from,$this->to);
+		$result = CodeDiff::toTable($result);
+		return $result;
+	}
+	
+	private function compare() {
+		return $this->compareXML();;
+	}
+	
+	private function renderXML() {
+		return $this->doc->saveHTML();
+	}
+	
+	private function prepareDocument($result) {
+		$this->doc->loadHTML(mb_convert_encoding($result, 'HTML-ENTITIES','UTF-8'));
+		
+		$scriptNode = $this->doc->createElement('script');
+		$scriptNode->setAttribute('src',self::DIFFSTYLE);
+		
+		$metaNode = $this->doc->createElement('meta');
+		$metaNode->setAttribute('http-equiv','Content-type');
+		$metaNode->setAttribute('content','text/html');
+		$metaNode->setAttribute('charset','UTF-8');
+		
+		$headNode = $this->doc->createElement('head');
+		$headNode->appendChild($metaNode);
+		$headNode->appendChild($scriptNode);
+		
+		if(self::CSS) {
+			$styleNode = $this->doc->createElement('link');
+			$styleNode->setAttribute('rel','stylesheet');
+			$styleNode->setAttribute('type','text/css');
+			$styleNode->setAttribute('href',self::CSS);
+			$headNode->appendChild($styleNode);
+		}
+		
+		$root = $this->doc->documentElement;
+		$root->insertBefore($headNode,$root->firstChild);
+	}
 }
 
-$diff->render();
+?>
