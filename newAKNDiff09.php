@@ -46,7 +46,6 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
- 
 require_once('AKNDiff.php');
 
 class nPassiveModification extends PassiveModification {
@@ -1639,11 +1638,11 @@ class newAKNDiff09 extends AKNDiff {
 		$this->newUrl = ($this->leftToRight) ? $this->doc1Url : $this->doc2Url;
 		$this->oldUrl = ($this->leftToRight) ? $this->doc2Url : $this->doc1Url;
 
-		$html = aknToHtml($this->xml_new,'data/AknToXhtml309.xsl');
+		$html = aknToHtml($this->xml_new);
 		$this->html_new = new DOMDocument();
 		$this->html_new->loadXML($html);
 		
-		$html = aknToHtml($this->xml_old,'data/AknToXhtml309.xsl');
+		$html = aknToHtml($this->xml_old);
 		$this->html_old = new DOMDocument();
 		$this->html_old->loadXML($html);
 	}

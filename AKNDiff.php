@@ -47,7 +47,7 @@
  */
 
  
-require_once('../utils.php');
+require_once('utils.php');
 
 class PassiveModification {
 	
@@ -424,11 +424,11 @@ class AKNDiff {
 			$this->xml_old = $doc1;
 			$this->leftToRight = FALSE;
 		}
-		$html = aknToHtml($this->xml_new,'data/AknToXhtml30.xsl');
+		$html = aknToHtml($this->xml_new);
 		$this->html_new = new DOMDocument();
 		$this->html_new->loadXML($html);
 		
-		$html = aknToHtml($this->xml_old,'data/AknToXhtml30.xsl');
+		$html = aknToHtml($this->xml_old);
 		$this->html_old = new DOMDocument();
 		$this->html_old->loadXML($html);
 	}

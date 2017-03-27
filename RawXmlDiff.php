@@ -48,8 +48,6 @@
  
 require_once('lib/class.TextDiff.php');
 require_once('lib/class.CodeDiff.php');
-require_once('../utils.php');
-require_once('../config.php');
 
 class RawXmlDiff {
 	
