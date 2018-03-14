@@ -1650,7 +1650,10 @@ class newAKNDiff09 extends AKNDiff {
 	protected function getBodyNode($node) {
 		$finder = new DomXPath($node);
 		$docType = $this->getDocType($node);
-		$bodyName = ($docType == 'doc') ? 'mainBody' : 'body';
+		$bodyName = 'body';
+		if ($docType == 'doc' || $docType == 'statement') {
+			$bodyName = 'mainBody';
+		}
 		$bodyNode = $finder->query("//*[@class and contains(concat(' ', normalize-space(@class), ' '), ' $bodyName ')]");
 		return $bodyNode->item(0);
 	}
