@@ -3,40 +3,40 @@
 /*
  * Copyright (c) 2014 - Copyright holders CIRSFID and Department of
  * Computer Science and Engineering of the University of Bologna
- * 
- * Authors: 
+ *
+ * Authors:
  * Monica Palmirani – CIRSFID of the University of Bologna
  * Fabio Vitali – Department of Computer Science and Engineering of the University of Bologna
  * Luca Cervone – CIRSFID of the University of Bologna
- * 
+ *
  * Permission is hereby granted to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the
  * rights to use, copy, modify, merge, publish, distribute, sublicense,
  * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
- * 
+ *
  * The Software can be used by anyone for purposes without commercial gain,
  * including scientific, individual, and charity purposes. If it is used
  * for purposes having commercial gains, an agreement with the copyright
  * holders is required. The above copyright notice and this permission
  * notice shall be included in all copies or substantial portions of the
  * Software.
- * 
+ *
  * Except as contained in this notice, the name(s) of the above copyright
  * holders and authors shall not be used in advertising or otherwise to
  * promote the sale, use or other dealings in this Software without prior
  * written authorization.
- * 
+ *
  * The end-user documentation included with the redistribution, if any,
  * must include the following acknowledgment: "This product includes
  * software developed by University of Bologna (CIRSFID and Department of
- * Computer Science and Engineering) and its authors (Monica Palmirani, 
+ * Computer Science and Engineering) and its authors (Monica Palmirani,
  * Fabio Vitali, Luca Cervone)", in the same place and form as other
  * third-party acknowledgments. Alternatively, this acknowledgment may
  * appear in the software itself, in the same form and location as other
  * such third-party acknowledgments.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -49,9 +49,9 @@
 require_once('AKNDiff.php');
 
 class nPassiveModification extends PassiveModification {
-	
+
 	public $id,$type,$old,$new;
-	
+
 	public function __construct($mod) {
 		if ($mod->nodeType == XML_ELEMENT_NODE) {
 			$this->type = $mod->getAttribute('type');
@@ -61,7 +61,7 @@ class nPassiveModification extends PassiveModification {
 			$this->destination = substr($mod->getElementsByTagName('destination')->item(0)->getAttribute('href'),1);
 			$previous = $mod->getElementsByTagName('previous');
 			$previous = ($previous->length) ? $previous->item(0)->getAttribute("href") : NULL;
-			
+
 			$this->previousId = ($previous) ? substr($previous, strrpos($previous, "#")+1) : NULL;
 			$oldNode = NULL;
 			foreach ($mod->getElementsByTagName('old') as $old) {
@@ -71,24 +71,24 @@ class nPassiveModification extends PassiveModification {
 				$this->textAfter = $this->getChValue($old, 'after');
 				$oldNode = $old;
 			}
-			
+
 			$this->oldHref = ($oldNode) ? substr($oldNode->getAttribute('href'), strrpos($oldNode->getAttribute('href'), "#")+1) : "";
-			
+
 			$nodeNew = NULL;
 			foreach ($mod->getElementsByTagName('new') as $new) {
 				$this->new = $new->nodeValue;
 				$nodeNew = $new;
 			}
 			$this->newHref = ($nodeNew) ? substr($nodeNew->getAttribute('href'),1) : "";
-			
+
 			foreach ($mod->getElementsByTagName('destination') as $dest) {
 				$this->destinations[] = substr($dest->getAttribute('href'), strrpos($dest->getAttribute('href'), "#")+1);
 			}
-			
+
 			foreach ($mod->getElementsByTagName('old') as $old) {
 				$this->olds[] = substr($old->getAttribute('href'), strrpos($old->getAttribute('href'), "#")+1);
 			}
-			
+
 			//$this->id = (!$this->new && $nodeNew) ? $this->newHref : $this->destination;
 			$this->id = ($this->newHref && $nodeNew) ? $this->newHref : $this->destination;
 		}
@@ -99,7 +99,7 @@ class nPassiveModification extends PassiveModification {
 		if ($ch->length) {
 			return $ch->item(0)->nodeValue;
 		}
-	}	
+	}
 }
 
 class newAKNDiff09 extends AKNDiff {
@@ -111,12 +111,12 @@ class newAKNDiff09 extends AKNDiff {
 			$childNode->setAttribute('parentClass', $childNode->parentNode->getAttribute("class"));
 		}
 	}
-	
+
 	protected  function buildColumns($node) {
 		$list = array();
 		$tdNode = $this->tableDOM->createElement('td');
 		foreach ($node->childNodes as $childNode) {
-			
+
 			if($childNode->nodeName == 'div' &&
 			   !($childNode->getAttribute('akn_status') == 'removed')) {
 					$list = array_merge($list, $this->buildColumns($childNode));
@@ -145,7 +145,7 @@ class newAKNDiff09 extends AKNDiff {
 		}
 		return $list;
 	}
-	
+
 	protected function searchNodeValue($nodes, $value) {
 		foreach($nodes as $node) {
 			if($node->nodeValue == $value) {
@@ -154,7 +154,7 @@ class newAKNDiff09 extends AKNDiff {
 		}
 		return FALSE;
 	}
-	
+
 	protected function getTextNodesContaining($node, $str, $caseSensitive = FALSE) {
 		return $this->getTextNodesBy($node, function($textNode) use ($str, $caseSensitive) {
 			$nodeText = $textNode->data;
@@ -168,19 +168,19 @@ class newAKNDiff09 extends AKNDiff {
 				return TRUE;
 		});
 	}
-	
+
 	protected function isNodeInsideMe($parent, $node) {
 		if($parent === $node) {
 			return TRUE;
 		}
 		if ($parent->hasChildNodes()) {
 			foreach ($parent->childNodes as $childNode) {
-				if($this->isNodeInsideMe($childNode, $node)) return TRUE; 
-			}	
+				if($this->isNodeInsideMe($childNode, $node)) return TRUE;
+			}
 		}
 		return FALSE;
 	}
-	
+
 	protected function getNextSiblingsContaining($node, $containgNode) {
 		$nodes = array();
 		$iterNode = $node->nextSibling;
@@ -196,7 +196,7 @@ class newAKNDiff09 extends AKNDiff {
 		if ($found) return $nodes;
 		return array();
 	}
-	
+
 	protected function getNextSiblings($node, $limitNode = FALSE) {
 		$nodes = array();
 		$iterNode = $node->nextSibling;
@@ -206,7 +206,7 @@ class newAKNDiff09 extends AKNDiff {
 		}
 		return $nodes;
 	}
-	
+
 	protected function getTextNodesContainingTextSmart($node, $text, $words = FALSE, $fromEnd = FALSE, $secondChance = FALSE) {
 		$words = ($words === FALSE) ? mb_split(" ", $text) : $words;
 		$nodes = array();
@@ -215,18 +215,18 @@ class newAKNDiff09 extends AKNDiff {
 		$nums = count($words);
 		$index = $nums;
 		while($index) {
-			$str =  ($fromEnd) ? implode(" ", array_slice($words, $nums-$index)) 
+			$str =  ($fromEnd) ? implode(" ", array_slice($words, $nums-$index))
 							   : implode(" ", array_slice($words, 0, $index));
 			$nodes = $this->getTextNodesContaining($node, $str);
 			foreach($nodes as $nd) {
-				$result[] = array("str" => $str, "node" => $nd);	
+				$result[] = array("str" => $str, "node" => $nd);
 			}
 			if(count($nodes)) {
 				break;
 			}
 			$index--;
 		}
-		
+
 		if($index && $index != count($words)) {
 			$nodes = $this->getTextNodesContainingTextSmart($node, $text, array_slice($words, $index), TRUE);
 			$result = array_merge($result, $nodes);
@@ -258,7 +258,7 @@ class newAKNDiff09 extends AKNDiff {
 						$wrapNodes[] = $wrapper;
 					}
 				}
-			}	
+			}
 		} else {
 			$nodes = $this->getUniqueObjNodes($this->getTextNodesContainingTextSmart($node, $searchText));
 			if(count($nodes)) {
@@ -291,7 +291,7 @@ class newAKNDiff09 extends AKNDiff {
 			}
 			if ($this->domnode_array_search($obj["node"], $passed[$obj["str"]]) === FALSE) {
 				$passed[$obj["str"]][] = $obj["node"];
-				$result[] = $obj;	
+				$result[] = $obj;
 			}
 		}
 		return $result;
@@ -332,7 +332,7 @@ class newAKNDiff09 extends AKNDiff {
 					continue;
 				}
 			}
-			// This can be needed occurence or 
+			// This can be needed occurence or
 			// the first one if the $textBefore and $textAfter are empty
 			return $intNode;
 		}
@@ -434,7 +434,7 @@ class newAKNDiff09 extends AKNDiff {
 			if(mb_strlen($newNode->data, $encoding) > mb_strlen($str, $encoding)) {
 				$tNode = $newNode->splitText(mb_strlen($str, $encoding));
 				if($tNode) {
-					$newNode = $tNode->previousSibling;	
+					$newNode = $tNode->previousSibling;
 				}
 			}
 			$wrapNode = $doc->createElement('span');
@@ -478,7 +478,7 @@ class newAKNDiff09 extends AKNDiff {
 					continue;
 				}
 			}
-			// This can be needed occurence or 
+			// This can be needed occurence or
 			// the first one if the $textBefore and $textAfter are empty
 			return $node;
 		}
@@ -497,7 +497,7 @@ class newAKNDiff09 extends AKNDiff {
 		if ($testlen > $strlen) return false;
 		return substr_compare($string, $test, 0, $testlen) === 0;
 	}
-	
+
 	protected function getTextNodesBy($node, $fn) {
 		$textList = array();
 		if(is_array($node) || get_class($node) == 'DOMNodeList') {
@@ -510,27 +510,27 @@ class newAKNDiff09 extends AKNDiff {
 					$textList = array_merge($textList, $this->getTextNodesBy($childNode, $fn));
 				} else if($childNode->nodeType == XML_TEXT_NODE) {
 					if($fn($childNode)) {
-						$textList[] = $childNode;	
+						$textList[] = $childNode;
 					}
 				}
-			}	
+			}
 		}
 
 		return $textList;
 	}
-	
+
 	protected function createBlankCell($document) {
 		$cell = $document->createElement('td');
 		$cell->nodeValue = "&nbsp;";
 		$cell->setAttribute("blankcell", "true");
 		return $cell;
 	}
-	
+
 	protected  function buildTable($table, $contentLeft, $contentRight) {
 		$leftTds = $this->buildColumns($contentLeft, TRUE);
 		$rightTds = $this->buildColumns($contentRight);
 		$tdNr = max(count($leftTds), count($rightTds));
-	
+
 		for($i = 0; $i < $tdNr; $i++) {
 			$trNode = $this->tableDOM->createElement('tr');
 			$tdNodeLeft = (array_key_exists($i, $leftTds)) ? $leftTds[$i] :  $this->createBlankCell($this->tableDOM);
@@ -538,18 +538,18 @@ class newAKNDiff09 extends AKNDiff {
 
 			$tdNodeLeft->setAttribute("class", ($this->leftToRight) ? "newVersion" : "oldVersion");
 			$tdNodeRight->setAttribute("class", ($this->leftToRight) ? "oldVersion" : "newVersion");
-			
+
 			$trNode->appendChild($tdNodeLeft);
 			$trNode->appendChild($tdNodeRight);
-			
+
 			$table->appendChild($trNode);
 		}
-		
+
 		$this->cleanTable($table);
 		$this->applyMods($table);
 		$this->normalizeTable($table);
 	}
-	
+
 	protected function cleanTable($table) {
 		$doc = $table->ownerDocument;
 		$xpath = new DOMXPath($doc);
@@ -566,7 +566,7 @@ class newAKNDiff09 extends AKNDiff {
 			}
 		}
 	}
-	
+
 	protected function unwrapNode($node, $addSpace=TRUE) {
 		$doc = $node->ownerDocument;
 		$parent = $node->parentNode;
@@ -574,7 +574,7 @@ class newAKNDiff09 extends AKNDiff {
 		if ($addSpace)
 			$parent->insertBefore($doc->createTextNode(" "), $node);
 		if($node->nextSibling && $addSpace) {
-			$parent->insertBefore($doc->createTextNode(" "), $node->nextSibling);	
+			$parent->insertBefore($doc->createTextNode(" "), $node->nextSibling);
 		}
 		while($iterNode) {
 			$nodeToMove = $node->removeChild($iterNode);
@@ -582,30 +582,30 @@ class newAKNDiff09 extends AKNDiff {
 			$iterNode = $node->firstChild;
 		}
 		$parent->removeChild($node);
-		$parent->normalize();	
+		$parent->normalize();
 	}
-	
+
 	protected function setAllAttribute($nodes, $attribute, $value, $append = TRUE) {
 		$attValue = $value;
 		foreach($nodes as $node) {
 			if ($append) {
 				$oldValue = $node->getAttribute($attribute);
-				$attValue= ($oldValue) ? $oldValue." $value" : $value;	
+				$attValue= ($oldValue) ? $oldValue." $value" : $value;
 			}
 			$node->setAttribute($attribute, trim($attValue));
 		}
 	}
-	
+
 	protected function appendUniqueTd($nodes, $array) {
 		foreach($nodes as $node) {
 			$td = $this->getParentByName($node, "td");
 			if(($node->getAttribute("parent") || $node->getAttribute("parentOriginalId")) && !in_array($td, $array, TRUE)) {
 				array_push($array, $td);
-			}			
+			}
 		}
 		return $array;
 	}
-	
+
 	protected function getUpRowContainsAttr($td, $attr, $class) {
 		$xpath = new DOMXPath($td->ownerDocument);
 		$posInParent = $this->getPosInParent($td);
@@ -617,7 +617,7 @@ class newAKNDiff09 extends AKNDiff {
 		}
 		return FALSE;
 	}
-	
+
 	protected function normalizeRow($tr,$modName) {
 		$class = $modName . 'BlankCell';
 		$xpath = new DOMXPath($tr->ownerDocument);
@@ -628,11 +628,11 @@ class newAKNDiff09 extends AKNDiff {
 			$cell = $xpath->query(".//td[contains(@class, '$class')]", $tr);
 			if (!$cell->length) {
 				$this->removeBlankCell($blankCell);
-			} 
+			}
 		}
-		
+
 	}
-	
+
 	protected function normalizeModification($td, $nextTd, $modName, $avoidClass = FALSE) {
 		$nextTr = ($nextTd) ? $this->getParentByName($nextTd, "tr") : FALSE;
 		if(!$td) return;
@@ -674,11 +674,11 @@ class newAKNDiff09 extends AKNDiff {
 	protected function normalizeInserition($td, $nextTd) {
 		$this->normalizeModification($td, $nextTd, "insertion", "repeal");
 	}
-	
+
 	protected function normalizeRepeal($td, $nextTd) {
 		$this->normalizeModification($td, $nextTd, "repeal", "insertion");
 	}
-	
+
 	protected function normalizeModifications($td, $nextTd) {
 		$nextTr = ($nextTd) ? $this->getParentByName($nextTd, "tr") : FALSE;
 		$firstRepeal = FALSE;
@@ -705,7 +705,7 @@ class newAKNDiff09 extends AKNDiff {
 			$this->normalizeRepeal($td, $nextTd);
 		}
 	}
-	
+
 	protected function normalizeTable($table) {
 		$xpath = new DOMXPath($table->ownerDocument);
 		$nodesNew = $xpath->query("//*[@class='newVersion']//*[contains(@parentClass, 'hcontainer')]", $table);
@@ -714,11 +714,11 @@ class newAKNDiff09 extends AKNDiff {
 		$tdsOld = array();
 		$tdsNew = $this->appendUniqueTd($nodesNew, $tdsNew);
 		$tdsOld = $this->appendUniqueTd($nodesOld, $tdsOld);
-		
+
 		$num = max(count($tdsNew), count($tdsOld));
 		for($i=0; $i<$num; $i++) {
 			$tdNew = (array_key_exists($i, $tdsNew)) ? $tdsNew[$i] : FALSE;
-			
+
 			if ($tdNew) {
 				// TODO: check if this is really need to be removed
 				// $parent = $xpath->query(".//*/@parentOriginalId", $tdNew);
@@ -729,7 +729,7 @@ class newAKNDiff09 extends AKNDiff {
 				$parent = $xpath->query(".//*/@parent", $tdNew);
 				if ($parent->length > 0) $parent = $parent->item(0)->nodeValue;
 			}
-			
+
 
 			//$tdOld = (array_key_exists($i, $tdsOld)) ? $tdsOld[$i] : FALSE;
 			$tdOld = FALSE;
@@ -757,12 +757,12 @@ class newAKNDiff09 extends AKNDiff {
 					}
 					while($nums) {
 						$this->addBlankCell($table, $tdAdd);
-						$nums--;	
+						$nums--;
 					}
 				}
-				
+
 			}
-			
+
 			// Importante farlo a questo punto e non prima, perché altrimenti si perde l'allineamento
 			$nextTdNew = (array_key_exists($i+1, $tdsNew)) ? $tdsNew[$i+1] : FALSE;
 			$nextTdOld = (array_key_exists($i+1, $tdsOld)) ? $tdsOld[$i+1] : FALSE;
@@ -772,8 +772,8 @@ class newAKNDiff09 extends AKNDiff {
 		$this->applyJoins($table);
 		$this->detectCellsOfInteress($table);
 	}
-	
-	
+
+
 	protected function applyNotes($table) {
 		$xpath = new DOMXPath($table->ownerDocument);
 		$noteRow = $this->tableDOM->createElement('tr');
@@ -792,8 +792,8 @@ class newAKNDiff09 extends AKNDiff {
 		foreach($notes as $note) {
 			$notesDescriptions[$note->getAttribute("eId")] = $note->nodeValue;
 		}
-		
-		$notesRef = $xpath->query(".//*[@class='newVersion']//*[contains(@class, 'noteRef')]", $table);	
+
+		$notesRef = $xpath->query(".//*[@class='newVersion']//*[contains(@class, 'noteRef')]", $table);
 		for($i = 0; $i < $notesRef->length; $i++) {
 			$noteRef = $notesRef->item($i);
 			$id = substr($noteRef->getAttribute("akn_href"),1);
@@ -822,9 +822,9 @@ class newAKNDiff09 extends AKNDiff {
 					$pos = $this->getPosInParent($td);
 				}
 			}
-			
+
 		}
-		
+
 		if($pos) {
 			$noteRow->appendChild($blankCell);
 			$noteRow->appendChild($notesCell);
@@ -837,14 +837,14 @@ class newAKNDiff09 extends AKNDiff {
 	protected function finalCleanUp($table) {
 		$xpath = new DOMXPath($table->ownerDocument);
 		$rowContainsBlank = $xpath->query("//tr[td[@blankcell]]", $table);
-		
+
 		foreach($rowContainsBlank as $row) {
 			$otherTd = $xpath->query("./td[not(@blankcell)]", $row);
 			if(!$otherTd->length) {
 				$row->parentNode->removeChild($row);
 			}
 		}
-		
+
 		$emptyTds = $xpath->query("//td[not(@blankcell) and not(node())]");
 		foreach($emptyTds as $td) {
 			$td->nodeValue = "&nbsp;";
@@ -863,7 +863,7 @@ class newAKNDiff09 extends AKNDiff {
 				$modsXpath = ".//*[contains(@class, 'insertion') or contains(@class, 'substitution') or contains(@class, 'repeal')]";
 				$firstMods = $xpath->query($modsXpath, $firstChild);
 				$secondMods = $xpath->query($modsXpath, $secondChild);
-				if(!$firstMods->length && !$secondMods->length && 
+				if(!$firstMods->length && !$secondMods->length &&
 								(!$firstChild->getAttribute("blankcell") && !$secondChild->getAttribute("blankcell"))) {
 					$this->setAllAttribute(array($firstChild, $secondChild), "equalcell", "equal$equalCount");
 					//$this->setAllAttribute(array($firstChild, $secondChild), "style", "background-color:red;");
@@ -888,7 +888,7 @@ class newAKNDiff09 extends AKNDiff {
 			$tdNew->setAttribute("renumberingTo", $renumberingId);
 		}
 	}
-	
+
 	protected function applySplits($table) {
 		$xpath = new DOMXPath($table->ownerDocument);
 		$nodesToSplit = $xpath->query("//*[@class='oldVersion']//*[@toSplit]", $table);
@@ -908,7 +908,7 @@ class newAKNDiff09 extends AKNDiff {
 						$tdToRemove = $siblingTr->childNodes->item($pos);
 						if($tdToRemove && $tdToRemove->getAttribute("blankcell")) {
 							$removedTd = TRUE;
-							$siblingTr->removeChild($tdToRemove);	
+							$siblingTr->removeChild($tdToRemove);
 						}
 					}
 					$siblingTr = $siblingTr->nextSibling;
@@ -923,7 +923,7 @@ class newAKNDiff09 extends AKNDiff {
         $xpath = new DOMXPath($table->ownerDocument);
         $posInParent = $this->getPosInParent($this->getParentByName($node, "td"));
         $targetTr = $this->getParentByName($node, "tr");
-        
+
         foreach($destNodes as $spNode) {
             $tr = $this->getParentByName($spNode, "tr");
             if ($tr === $targetTr) continue;
@@ -936,7 +936,7 @@ class newAKNDiff09 extends AKNDiff {
                 $tdToMove = $tr->nextSibling->replaceChild($tdToMove, $nextTd);
                 if (!$tdToMove->getAttribute("blankcell"))
                     $this->insertAfter($this->wrapTd($table, $tdToMove, $posInParent), $tr->nextSibling);
-            } else 
+            } else
                 $table->insertBefore($this->wrapTd($table, $tdToMove, $posInParent), $tr->nextSibling);
         }
     }
@@ -960,7 +960,7 @@ class newAKNDiff09 extends AKNDiff {
         }
         return $trNode;
     }
-	
+
 	protected function applyJoins($table) {
 		$xpath = new DOMXPath($table->ownerDocument);
 		$nodesJoined = $xpath->query("//*[@class='newVersion']//*[@joined]", $table);
@@ -983,7 +983,7 @@ class newAKNDiff09 extends AKNDiff {
 				if ($nodeJoin && $tdJoin && $nodeJoin->nodeValue == $tdJoin->nodeValue) {
 					$newTr = $table->ownerDocument->createElement('tr');
 					if($siblingTr) {
-						$tr->parentNode->insertBefore($newTr, $siblingTr);	
+						$tr->parentNode->insertBefore($newTr, $siblingTr);
 					} else {
 						$tr->parentNode->appendChild($newTr);
 					}
@@ -994,12 +994,12 @@ class newAKNDiff09 extends AKNDiff {
 				$tdJoined->setAttribute("rowspan", $nodesToJoin->length);
 		}
 	}
-	
+
 	protected function getPosInParent($node) {
 		$parent = $node->parentNode;
 		$counter = 0;
 		foreach($parent->childNodes as $cNode) {
-			if($cNode === $node) 
+			if($cNode === $node)
 				return $counter;
 			$counter++;
 		}
@@ -1055,13 +1055,13 @@ class newAKNDiff09 extends AKNDiff {
 	protected function containsWord($string, $word) {
 		return preg_match("/\b$word/", $string);
 	}
-	
+
 	protected function applyMods($table) {
-		$xpath = new DOMXPath($table->ownerDocument);		
+		$xpath = new DOMXPath($table->ownerDocument);
 		foreach($this->mods as $id => $mod) {
 			if($mod->previousId)
 				$this->setPreviousIdAttr($mod, $xpath, $table);
-			
+
 			switch($mod->type) {
 				case "substitution":
 					$this->applyModSubstitution($mod, $xpath, $table);
@@ -1088,12 +1088,12 @@ class newAKNDiff09 extends AKNDiff {
 	protected function setPreviousIdAttr($mod, $xpath, $table) {
 		// It's important to check first if there're nodes with parent = id and after check if contains
 		$originalNodes = $xpath->query("//*[@class='newVersion']//*[@akn_currentId ='$mod->id' or @parent = '$mod->id']", $table);
-		$originalNodes = (!$originalNodes->length) ? 
-							$xpath->query("//*[@class='newVersion']//*[@akn_currentId ='$mod->id' or contains(@parent, '$mod->id')]", $table) 
+		$originalNodes = (!$originalNodes->length) ?
+							$xpath->query("//*[@class='newVersion']//*[@akn_currentId ='$mod->id' or contains(@parent, '$mod->id')]", $table)
 							: $originalNodes;
 		foreach($originalNodes as $node) {
 			if(preg_match("/\b$mod->id/", $node->getAttribute("parent"))) {
-				$this->setAllAttribute(array($node), "parentOriginalId", $mod->previousId);						
+				$this->setAllAttribute(array($node), "parentOriginalId", $mod->previousId);
 			}
 		}
 	}
@@ -1109,13 +1109,13 @@ class newAKNDiff09 extends AKNDiff {
 		} else {
 			$newNode = $xpath->query("(//*[@class='newVersion']//*[@akn_currentId ='$mod->id' or  contains(@parent, '$mod->destination')])[last()]", $table)->item(0);
 		}
-		
+
 		if(!$destNodes->length && $mod->old) {
 			if($newNode) {
 				$parent = $newNode->parentNode;
 				$parentId = $parent->getAttribute('akn_currentId');
 				$destNodes = $xpath->query("//*[@class='oldVersion']//*[@akn_currentId ='$parentId']", $table);
-				
+
 				//echo $destNodes->length.' - '.$mod->old.' - '.$parentId.'<br>';
 
 				if (!$destNodes->length && $precedingText) {
@@ -1170,7 +1170,7 @@ class newAKNDiff09 extends AKNDiff {
 
 	protected function searchSubstitution($destNodes, $mod, $xpath, $table, $subsNodes, $setErrors = TRUE) {
 		$precedingText = $mod->textBefore;
-		//echo $mod->destination." - ".$destNodes->length. " - ".$mod->id." - ".$mod->old." - ".$precedingText."<br>";					
+		//echo $mod->destination." - ".$destNodes->length. " - ".$mod->id." - ".$mod->old." - ".$precedingText."<br>";
 		$this->setAllAttribute($subsNodes, "title", "Old string: ".$mod->old);
 		$this->setAllAttribute($subsNodes, "class", $mod->type);
 		$length = is_array($destNodes) ? count($destNodes) : $destNodes->length;
@@ -1199,8 +1199,8 @@ class newAKNDiff09 extends AKNDiff {
 				return FALSE;
 			}
 		} else {
-			//echo $mod->destination." - ".$mod->id." - ".$mod->old." - ".$precedingText."<br>";					
-			$this->setAllAttribute($destNodes, "class", $mod->type);	
+			//echo $mod->destination." - ".$mod->id." - ".$mod->old." - ".$precedingText."<br>";
+			$this->setAllAttribute($destNodes, "class", $mod->type);
 		}
 		return TRUE;
 	}
@@ -1250,7 +1250,7 @@ class newAKNDiff09 extends AKNDiff {
 			$this->setAllAttribute($oldNodes, "joinInto", "$mod->id");
 		}
 	}
-	
+
 	// This function needs to be refactored/rewritten
 	protected function applyModRepeal($mod, $xpath, $table) {
 		$idCond = "";
@@ -1342,7 +1342,7 @@ class newAKNDiff09 extends AKNDiff {
 				$this->setAllAttribute($destNodes, "class", "repeal");
 				return TRUE;
 			}
-			
+
 			if($this->findAndwrapTextNode($mod->old, $destNodes, $mod->type, $mod->textBefore, $mod->textAfter) === FALSE) {
 				if ($setErrors) {
 					$this->setAllAttribute($targetNodes, "class", "errorRepeal");
@@ -1483,13 +1483,13 @@ class newAKNDiff09 extends AKNDiff {
 		foreach ($diff as $key => $value) {
 			if (!array_key_exists($key, $idParts)) continue;
 			// If there are the same this means that eId doesn't have this part so remove it
-			if ( $idParts[$key] ==  $value) 
+			if ( $idParts[$key] ==  $value)
 				array_splice($idParts, $key, 1);
 			else { // check if we need to value to wId
 				$partsEl = explode("_",$value);
 				$partsElWid = explode("_",$idParts[$key]);
 				// adding only if the name of elements are different
-				if ( $partsEl[0] != $partsElWid[0] && strpos($id, $partsEl[0]."_") === FALSE ) { 
+				if ( $partsEl[0] != $partsElWid[0] && strpos($id, $partsEl[0]."_") === FALSE ) {
 					array_splice( $idParts, $key, 0, $value );
 				}
 			}
@@ -1508,21 +1508,21 @@ class newAKNDiff09 extends AKNDiff {
 			}
 		}
 	}
-	
+
 	protected function switchNode($node1, $node2) {
 		$tmpNode = $this->createBlankCell($node1->ownerDocument);
 		$node1 = $node1->parentNode->replaceChild($tmpNode, $node1);
 		$node2 = $node2->parentNode->replaceChild($node1, $node2);
 		$tmpNode->parentNode->replaceChild($node2, $tmpNode);
 	}
-	
+
 	protected function removeBlankCell($node) {
 		$tr = $this->getParentByName($node, "tr");
 		if($tr) {
 			$pos = $this->getPosInParent($node);
 			while($tr) {
 				$nextTR = $tr->nextSibling;
-				if ($nextTR) { 
+				if ($nextTR) {
 					$rightTd = $nextTR->childNodes->item($pos);
 					if($rightTd) {
 						$this->switchNode($rightTd, $node);
@@ -1543,7 +1543,7 @@ class newAKNDiff09 extends AKNDiff {
 			$rigthTd = $tr->childNodes->item($cellPosition);
 			if($rigthTd) {
 				if ($cellToInsert) {
-					$cellToInsert = $tr->replaceChild($cellToInsert, $rigthTd);	
+					$cellToInsert = $tr->replaceChild($cellToInsert, $rigthTd);
 				}
 			}
 			$tr = $tr->nextSibling;
@@ -1552,12 +1552,12 @@ class newAKNDiff09 extends AKNDiff {
 		if(!$cellToInsert->getAttribute("blankcell"))
 			$table->appendChild($this->wrapTd($table, $cellToInsert, $cellPosition));
 	}
-	
+
 	protected function getParentByName($node, $name) {
 		$iterNode = $node->parentNode;
 		while($iterNode && $iterNode->nodeName != $name)
 			$iterNode = $iterNode->parentNode;
-		
+
 		return ($iterNode && $iterNode->nodeName == $name) ? $iterNode : FALSE;
 	}
 
@@ -1573,42 +1573,42 @@ class newAKNDiff09 extends AKNDiff {
 		}
 		return $mods->length;
 	}
-	
+
 	protected function prepareDocuments($doc1,$doc2) {
-		
+
 		/////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////
-		
+
 		$expression = '//doc:FRBRExpression/doc:FRBRdate';
-				
-		$uri = $doc1->documentElement->lookupnamespaceURI(NULL);	
+
+		$uri = $doc1->documentElement->lookupnamespaceURI(NULL);
 		$xpath = new DOMXPath($doc1);
 		$xpath->registerNamespace('doc', $uri);
 		$xml_1_date = strtotime($xpath->evaluate($expression)->item(0)->getAttribute('date'));
-	
-		
-		$uri = $doc2->documentElement->lookupnamespaceURI(NULL);		
+
+
+		$uri = $doc2->documentElement->lookupnamespaceURI(NULL);
 		$xpath = new DOMXPath($doc2);
 		$xpath->registerNamespace('doc', $uri);
 		$xml_2_date = strtotime($xpath->evaluate($expression)->item(0)->getAttribute('date'));
-		
+
 		/////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////
-		
+
 		$expression = 'count(//doc:lifecycle/*)';
-		
-		$uri = $doc1->documentElement->lookupnamespaceURI(NULL);		
+
+		$uri = $doc1->documentElement->lookupnamespaceURI(NULL);
 		$xpath = new DOMXPath($doc1);
 		$xpath->registerNamespace('doc', $uri);
 		$xml_1_eventRefs = $xpath->evaluate($expression);
-		
-		$uri = $doc2->documentElement->lookupnamespaceURI(NULL);		
+
+		$uri = $doc2->documentElement->lookupnamespaceURI(NULL);
 		$xpath = new DOMXPath($doc2);
 		$xpath->registerNamespace('doc', $uri);
 		$xml_2_eventRefs = $xpath->evaluate($expression);
-		
+
 		/////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////////
@@ -1616,9 +1616,9 @@ class newAKNDiff09 extends AKNDiff {
 			$this->xml_new = $doc1;
 			$this->xml_old = $doc2;
 			$this->leftToRight = TRUE;
-			
+
 		} else if ($xml_1_date == $xml_2_date) {
-			
+
 			if ($xml_1_eventRefs > $xml_2_eventRefs) {
 				$this->xml_new = $doc1;
 				$this->xml_old = $doc2;
@@ -1628,7 +1628,7 @@ class newAKNDiff09 extends AKNDiff {
 				$this->xml_old = $doc1;
 				$this->leftToRight = FALSE;
 			}
-			
+
 		} else {
 			$this->xml_new = $doc2;
 			$this->xml_old = $doc1;
@@ -1641,7 +1641,7 @@ class newAKNDiff09 extends AKNDiff {
 		$html = aknToHtml($this->xml_new);
 		$this->html_new = new DOMDocument();
 		$this->html_new->loadXML($html);
-		
+
 		$html = aknToHtml($this->xml_old);
 		$this->html_old = new DOMDocument();
 		$this->html_old->loadXML($html);
@@ -1661,27 +1661,27 @@ class newAKNDiff09 extends AKNDiff {
 		$docClass = explode(" ", $docClass);
 		return array_pop($docClass);
 	}
-	
+
 	public function render() {
 		if ($this->xml_new && $this->xml_old) {
-				
+
 			$html = new DOMDocument();
 			$root = $html->createElement('html');
-			
+
 			$metaNode = $html->createElement('meta');
 			$metaNode->setAttribute('http-equiv','Content-type');
 			$metaNode->setAttribute('content','text/html');
 			$metaNode->setAttribute('charset','UTF-8');
-			
+
 			$styleNode = $html->createElement('link');
 			$styleNode->setAttribute('rel','stylesheet');
 			$styleNode->setAttribute('type','text/css');
 			$styleNode->setAttribute('href','data/newDiff.css');
-			
+
 			//$scriptNode = $html->createElement('script');
 			//$scriptNode->nodeValue = "var head = document.getElementsByTagName('head')[0];var script = document.createElement('script');script.type = 'text/javascript';script.src = 'data/afterRender.js'; head.appendChild(script);";
 			//$scriptNode->setAttribute('src', "https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js");
-			
+
 			$scriptNode = $html->createElement('script');
 			//$scriptNode->nodeValue = "";
 			$scriptNode->setAttribute('src', "js/afterRender.js");
@@ -1689,20 +1689,20 @@ class newAKNDiff09 extends AKNDiff {
 			$headNode->appendChild($metaNode);
 			$headNode->appendChild($styleNode);
 			$headNode->appendChild($scriptNode);
-			
+
 			$body = $html->createElement('body');
 			$body->setAttribute("onload", "addVisualizationLayouts()");
-			
+
 			///////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////
 			///////////////////////////////////////////////////////
-			
+
 			$contentLeft = $this->getBodyNode($this->html_new);
 			$contentRight = $this->getBodyNode($this->html_old);
 
 			$this->tableDOM = new DOMDocument();
 			$this->tableRoot = $this->tableDOM->createElement('table');
-			
+
 			$nodeLeft = $this->html_new->documentElement->firstChild;
 			$nodeRight = $this->html_old->documentElement->firstChild;
 			if (!$this->leftToRight) {
@@ -1713,7 +1713,7 @@ class newAKNDiff09 extends AKNDiff {
 				$contentRight = $tmp;
 			}
 			$this->topOfDocument($nodeLeft,$nodeRight);
-			
+
 			$numMods = $this->collectMods();
 			if(!$numMods) {
 				$div = $html->createElement('div');
@@ -1730,12 +1730,12 @@ class newAKNDiff09 extends AKNDiff {
 			$_tdNode->appendChild($table);
 			$_trNode->appendChild($_tdNode);
 			$this->tableRoot->appendChild($_trNode);
-			
+
 			$this->buildTable($table, $contentLeft, $contentRight);
 			$trNode = $this->tableDOM->createElement('tr');
 			$this->tableRoot->appendChild($trNode);
 			$this->bottomOfDocument($nodeLeft,$nodeRight,$trNode);
-			
+
 			$this->applyNotes($table);
 			$this->finalCleanUp($table);
 
@@ -1774,7 +1774,7 @@ class newAKNDiff09 extends AKNDiff {
 					$table->appendChild($trHeader);
 				}
 			}
-			
+
 			echo $html->saveHTML();
 		}
 	}
